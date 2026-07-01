@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Chain Command Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #e2e8f0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #f43f5e; margin-bottom: 5px; }
+        .description { color: #94a3b8; margin-bottom: 25px; font-size: 0.95rem; }
+        .control-panel {
+            background-color: #1e1e24;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        input, select {
+            background-color: #2d2d3a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: #f43f5e; }
+        .btn-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            flex: 1;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .generate-btn { background-color: #f43f5e; }
+        .generate-btn:hover { background-color: #e11d48; }
+        .max-btn { background-color: #8b5cf6; }
+        .max-btn:hover { background-color: #7c3aed; }
+        .output-container { display: flex; flex-direction: column; gap: 20px; }
+        .chain-box {
+            background-color: #1e1e24;
+            border-left: 4px solid #f43f5e;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+        .chain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .chain-title { font-weight: bold; color: #38bdf8; font-family: monospace; font-size: 1.1rem; }
+        .copy-btn {
+            background-color: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            flex: none;
+        }
+        .copy-btn:hover { background-color: #475569; }
+        textarea {
+            width: 100%;
+            height: 60px;
+            background-color: #0f172a;
+            color: #34d399;
+            border: 1px solid #334155;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ultimate Rainbow Chain Generator</h1>
+    <p class="description">Generate seamlessly linked command strings over multiple custom loops to create perfectly smooth fades.</p>
+
+    <div class="control-panel">
+        <div class="form-group">
+            <label for="baseName">Sequence Name</label>
+            <input type="text" id="baseName" value="3rgb" placeholder="e.g., 3rgb">
+        </div>
+        <div class="form-group">
+            <label for="chainCount">Number of Chains</label>
+            <input type="number" id="chainCount" value="5" min="1" max="100">
+        </div>
+        <div class="form-group">
+            <label for="colorFormat">Color Format</label>
+            <select id="colorFormat">
+                <option value="hex">Hex (aabbcc)</option>
+                <option value="hashHex">Hash Hex (#aabbcc)</option>
+                <option value="rgbCsv">RGB Comma (r,g,b)</option>
+            </select>
+        </div>
+        <div class="btn-group">
+            <button class="generate-btn" onclick="generateChains()">Generate Custom Chains</button>
+            <button class="max-btn" onclick="triggerMaxSmoothness()">Max Smoothness (81 Chains)</button>
+        </div>
+    </div>
+
+    <div class="output-container" id="output"></div>
+
+    <script>
+        function triggerMaxSmoothness() {
+            document.getElementById('chainCount').value = 81;
+            generateChains(true); // pass true to use strict step-by-1 calculation
+        }
+
+        function generateChains(isMaxMode = false) {
+            const baseName = document.getElementById('baseName').value.trim() || 'rgb';
+            let totalChains = parseInt(document.getElementById('chainCount').value) || 5;
+            const format = document.getElementById('colorFormat').value;
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+
+            const commandsPerChain = 19; 
+            
+            let colors = [];
+
+            if (isMaxMode || totalChains === 81) {
+                // Absolute maximum mode: Step strictly by 1 unit through the 1,530 hex combinations
+                totalChains = 81;
+                document.getElementById('chainCount').value = 81;
+                
+                let r = 255, g = 0, b = 0;
+                // Phase 1: Red to Yellow (Green up)
+                for (; g < 255; g++) colors.push({r, g, b});
+                // Phase 2: Yellow to Green (Red down)
+                for (; r > 0; r--) colors.push({r, g, b});
+                // Phase 3: Green to Cyan (Blue up)
+                for (; b < 255; b++) colors.push({r, g, b});
+                // Phase 4: Cyan to Blue (Green down)
+                for (; g > 0; g--) colors.push({r, g, b});
+                // Phase 5: Blue to Magenta (Red up)
+                for (; r < 255; r++) colors.push({r, g, b});
+                // Phase 6: Magenta back to Red (Blue down)
+                for (; b > 0; b--) colors.push({r, g, b});
+            } else {
+                // Custom mode: Dynamically stretch the spectrum mathematically across whatever number of chains requested
+                const totalColors = totalChains * commandsPerChain;
+                for (let i = 0; i < totalColors; i++) {
+                    const ratio = i / totalColors;
+                    let r = 0, g = 0, b = 0;
+                    const phase = ratio * 6;
+                    const x = Math.round(255 * (1 - Math.abs((phase % 2) - 1)));
+                    
+                    if (phase < 1) { r = 255; g = x; }
+                    else if (phase < 2) { r = x; g = 255; }
+                    else if (phase < 3) { g = 255; b = x; }
+                    else if (phase < 4) { g = x; b = 255; }
+                    else if (phase < 5) { r = x; b = 255; }
+                    else { r = 255; b = x; }
+                    colors.push({r, g, b});
+                }
+            }
+
+            // Group into console chains
+            for (let c = 0; c < totalChains; c++) {
+                let segments = [];
+
+                for (let k = 0; k < commandsPerChain; k++) {
+                    const colorIndex = (c * commandsPerChain) + k;
+                    if (colorIndex >= colors.length) break;
+                    
+                    const col = colors[colorIndex];
+                    let formattedColor = "";
+
+                    if (format === 'hex') {
+                        formattedColor = toHex(col.r) + toHex(col.g) + toHex(col.b);
+                    } else if (format === 'hashHex') {
+                        formattedColor = '#' + toHex(col.r) + toHex(col.g) + toHex(col.b);
+                    } else if (format === 'rgbCsv') {
+                        formattedColor = `${col.r},${col.g},${col.b}`;
+                    }
+
+                    segments.push(`mc ${formattedColor}`);
+                }
+
+                // Add next link destination
+                const nextChainNum = (c + 1) >= totalChains ? 1 : c + 2;
+                segments.push(`${baseName}${nextChainNum}`);
+
+                const finalChainString = segments.join(' | ');
+                createChainUI(c + 1, `${baseName}${c + 1}`, finalChainString);
+            }
+        }
+
+        function toHex(num) {
+            return num.toString(16).padStart(2, '0');
+        }
+
+        function createChainUI(number, name, commandText) {
+            const container = document.getElementById('output');
+            
+            const box = document.createElement('div');
+            box.className = 'chain-box';
+
+            const header = document.createElement('div');
+            header.className = 'chain-header';
+
+            const title = document.createElement('div');
+            title.className = 'chain-title';
+            title.innerText = `Command Key / Filename: ${name}`;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.innerText = 'Copy String';
+            copyBtn.onclick = function() {
+                navigator.clipboard.writeText(commandText);
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = 'Copied!';
+                copyBtn.style.backgroundColor = '#059669';
+                setTimeout(() => {
+                    copyBtn.innerText = originalText;
+                    copyBtn.style.backgroundColor = '#334155';
+                }, 1500);
+            };
+
+            const txt = document.createElement('textarea');
+            txt.readOnly = true;
+            txt.value = commandText;
+
+            header.appendChild(title);
+            header.appendChild(copyBtn);
+            box.appendChild(header);
+            box.appendChild(txt);
+            container.appendChild(box);
+        }
+
+        // Run automatically on first load
+        window.onload = function() { generateChains(false); };
+    </script>
+</body>
+</html>
